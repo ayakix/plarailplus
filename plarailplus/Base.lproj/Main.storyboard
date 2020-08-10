@@ -11,7 +11,7 @@
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="plarailplus" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="プラレール_" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="1366" height="1024"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -26,7 +26,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="TrainCollectionViewCell" id="Hrp-Dt-PMI" customClass="TrainCollectionViewCell" customModule="plarailplus" customModuleProvider="target">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="TrainCollectionViewCell" id="Hrp-Dt-PMI" customClass="TrainCollectionViewCell" customModule="プラレール_" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="-142" width="800" height="1288"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="jX4-27-ZOl">
@@ -82,8 +82,8 @@
                                     <outlet property="dataSource" destination="BYZ-38-t0r" id="OIC-Aj-kh8"/>
                                 </connections>
                             </collectionView>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fsR-AM-UTU">
-                                <rect key="frame" x="1306" y="16" width="44" height="44"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fsR-AM-UTU" userLabel="Refresh Button">
+                                <rect key="frame" x="16" y="16" width="44" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="44" id="GJD-WT-0lX"/>
                                     <constraint firstAttribute="width" secondItem="fsR-AM-UTU" secondAttribute="height" multiplier="1:1" id="TGT-ue-TEy"/>
@@ -97,9 +97,9 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="AlG-ho-hh2" secondAttribute="trailing" id="3iT-p9-QW8"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="fsR-AM-UTU" secondAttribute="trailing" constant="16" id="4LV-nJ-UIZ"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="AlG-ho-hh2" secondAttribute="bottom" id="ZvB-HF-xZq"/>
                             <constraint firstItem="AlG-ho-hh2" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="dPC-cp-9w3"/>
+                            <constraint firstItem="fsR-AM-UTU" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="rOq-pA-mOP"/>
                             <constraint firstItem="fsR-AM-UTU" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="16" id="ymq-cB-eKf"/>
                             <constraint firstItem="AlG-ho-hh2" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="zOW-2h-Qfw"/>
                         </constraints>
