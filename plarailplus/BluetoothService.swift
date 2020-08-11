@@ -10,6 +10,7 @@ import CoreBluetooth
 
 final class BluetoothService: NSObject {
     private var peripheralName: String?
+    private var isRunning: Bool = false
     /// 対象のキャラクタリスティック
     private var writeCharacteristic: CBCharacteristic? = nil
     private var centralManager: CBCentralManager
@@ -57,13 +58,22 @@ final class BluetoothService: NSObject {
         self.centralManager.connect(peripheral, options: nil)
     }
     
-    func start() {
-        write(byteArray: kStartByteArray)
+    func toggle() {
+        if isRunning {
+            stop()
+        } else {
+            start()
+        }
     }
     
+    func start() {
+        write(byteArray: kStartByteArray)
+        isRunning = true
+    }
     
     func stop() {
         write(byteArray: kStopByteArray)
+        isRunning = false
     }
     
     private func write(byteArray: [UInt8]) {

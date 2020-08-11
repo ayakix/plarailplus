@@ -25,6 +25,25 @@ class ViewController: UIViewController {
         initTrains()
     }
     
+    override func becomeFirstResponder() -> Bool {
+        return true
+    }
+    
+    override var keyCommands: [UIKeyCommand]? {
+        return [
+            UIKeyCommand(input: "H", modifierFlags: [], action: #selector(hKeyPressed)),
+            UIKeyCommand(input: "K", modifierFlags: [], action: #selector(kKeyPressed))
+        ]
+    }
+    
+    @objc func hKeyPressed(sender: UIKeyCommand) {
+        trains.first(where: { $0.peripheralName == kHayabusaPeripheralName })?.bluetoothService.toggle()
+    }
+    
+    @objc func kKeyPressed(sender: UIKeyCommand) {
+        trains.first(where: { $0.peripheralName == kKomachiPeripheralName })?.bluetoothService.toggle()
+    }
+    
     @objc func checkBluetoothService(_ t: Timer) {
         collectionView.reloadData()
         if trains.allSatisfy({ $0.bluetoothService.peripheral != nil }) {
