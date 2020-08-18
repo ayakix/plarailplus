@@ -17,12 +17,14 @@ class ViewController: UIViewController {
     private var komachi: BluetoothService!
     private var layout = UICollectionViewFlowLayout()
     private var timer: Timer?
+    private var arduinoBluetoothService: BluetoothService!
+    private var arduinoLastValues: [Int] = [0, 0]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         initView()
-        initTrains()
+        connect()
     }
     
     override func becomeFirstResponder() -> Bool {
@@ -37,11 +39,11 @@ class ViewController: UIViewController {
     }
     
     @objc func hKeyPressed(sender: UIKeyCommand) {
-        trains.first(where: { $0.peripheralName == kHayabusaPeripheralName })?.bluetoothService.toggle()
+        toggleHayabusa()
     }
     
     @objc func kKeyPressed(sender: UIKeyCommand) {
-        trains.first(where: { $0.peripheralName == kKomachiPeripheralName })?.bluetoothService.toggle()
+        toggleKomachi()
     }
     
     @objc func checkBluetoothService(_ t: Timer) {
@@ -53,11 +55,23 @@ class ViewController: UIViewController {
     }
     
     @IBAction private func refreshButtonClicked(_ sender: UIButton) {
-        initTrains()
+        connect()
     }
 }
 
 private extension ViewController {
+    func initView() {
+        collectionView.delegate = self
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        layout.minimumInteritemSpacing = collectionView.frame.width / 25
+        collectionView?.collectionViewLayout = layout
+    }
+    
+    func connect() {
+        initTrains()
+        initArduino()
+    }
+    
     func initTrains() {
         if trains.count > 0 {
             trains.forEach {
@@ -69,7 +83,7 @@ private extension ViewController {
             Train(peripheralName: kKomachiPeripheralName, imageName: "komachi", bluetoothService: BluetoothService())
         ]
         trains.forEach {
-            $0.bluetoothService.setupBluetoothService(peripheralName: $0.peripheralName)
+            $0.bluetoothService.setupBluetoothService(peripheralName: $0.peripheralName, serviceUUID: kMabeeeServiceUUID, characteristicUUID: kMabeeeCharacteristicUUID)
         }
         collectionView.reloadData()
         
@@ -82,11 +96,19 @@ private extension ViewController {
         )
     }
     
-    func initView() {
-        collectionView.delegate = self
-        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        layout.minimumInteritemSpacing = collectionView.frame.width / 25
-        collectionView?.collectionViewLayout = layout
+    func initArduino() {
+        arduinoBluetoothService = BluetoothService()
+        arduinoBluetoothService.setupBluetoothService(peripheralName: kArduinoPeripheralName, serviceUUID: kArduinoServiceUUID, characteristicUUID: kArduinoCharacteristicUUID, delegate: self)
+    }
+    
+    func toggleHayabusa() {
+        let cell = collectionView?.cellForItem(at: IndexPath(item: 0, section: 0)) as? TrainCollectionViewCell
+        cell?.toggle()
+    }
+    
+    func toggleKomachi() {
+        let cell = collectionView?.cellForItem(at: IndexPath(item: 1, section: 0)) as? TrainCollectionViewCell
+        cell?.toggle()
     }
 }
 
@@ -114,4 +136,22 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
 
 extension ViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {}
+}
+
+extension ViewController: BluetoothServiceDelegate {
+    func didUpdateValueFor(_ characteristic: CBCharacteristic) {
+        guard characteristic.uuid == CBUUID(string: kArduinoCharacteristicUUID), let data = characteristic.value else {
+            return
+        }
+        
+        let values = [UInt8](data).map({ Int.init($0) })
+        print("キャラクタリスティック値変更: \(characteristic.uuid) \(values)")
+        if values[0] != arduinoLastValues[0] {
+            toggleHayabusa()
+        }
+        if values[1] != arduinoLastValues[1] {
+            toggleKomachi()
+        }
+        arduinoLastValues = values
+    }
 }
