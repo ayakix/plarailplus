@@ -8,15 +8,22 @@
 
 import CoreBluetooth
 
+protocol BluetoothServiceDelegate: class {
+    func didUpdateValueFor(_ characteristic: CBCharacteristic)
+}
+
 final class BluetoothService: NSObject {
     private var peripheralName: String?
-    private var isRunning: Bool = false
     /// 対象のキャラクタリスティック
     private var writeCharacteristic: CBCharacteristic? = nil
     private var centralManager: CBCentralManager
     private var peripheralManager: CBPeripheralManager
     /// 接続先の機器
     var peripheral: CBPeripheral? = nil
+    var serviceUUID: String!
+    var characteristicUUID: String!
+    
+    var delegate: BluetoothServiceDelegate?
 
     override init() {
         self.centralManager = CBCentralManager()
@@ -26,19 +33,22 @@ final class BluetoothService: NSObject {
     // MARK: - Public Methods
 
     /// Bluetooth接続のセットアップ
-    func setupBluetoothService(peripheralName: String) {
+    func setupBluetoothService(peripheralName: String, serviceUUID: String, characteristicUUID: String, delegate: BluetoothServiceDelegate? = nil) {
         self.peripheralName = peripheralName
         self.centralManager = CBCentralManager(delegate: self, queue: nil)
         self.peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
+        self.serviceUUID = serviceUUID
+        self.characteristicUUID = characteristicUUID
+        self.delegate = delegate
     }
 
     /// スキャン開始
     func startScan() {
         print("スキャン開始")
         if self.centralManager.isScanning == false {
-            let services = [CBUUID(string: kServiceUUID)]
-            self.centralManager.scanForPeripherals(withServices: services, options: nil)
-//            self.centralManager.scanForPeripherals(withServices: nil, options: nil)
+//            let services = [CBUUID(string: serviceUUID)]
+//            self.centralManager.scanForPeripherals(withServices: services, options: nil)
+            self.centralManager.scanForPeripherals(withServices: nil, options: nil)
         }
     }
 
@@ -58,25 +68,7 @@ final class BluetoothService: NSObject {
         self.centralManager.connect(peripheral, options: nil)
     }
     
-    func toggle() {
-        if isRunning {
-            stop()
-        } else {
-            start()
-        }
-    }
-    
-    func start() {
-        write(byteArray: kStartByteArray)
-        isRunning = true
-    }
-    
-    func stop() {
-        write(byteArray: kStopByteArray)
-        isRunning = false
-    }
-    
-    private func write(byteArray: [UInt8]) {
+    func write(byteArray: [UInt8]) {
         guard let writeCharacteristic = writeCharacteristic else {
             return
         }
@@ -145,7 +137,7 @@ extension BluetoothService: CBCentralManagerDelegate {
         self.peripheral?.delegate = self
         // 指定のサービスを探索
         if let peripheral = self.peripheral {
-            peripheral.discoverServices([CBUUID(string: kServiceUUID)])
+            peripheral.discoverServices([CBUUID(string: serviceUUID)])
         }
         // スキャン停止処理
         self.stopScan()
@@ -188,10 +180,10 @@ extension BluetoothService: CBPeripheralDelegate {
         }
 
         if let peripheralServices = peripheral.services {
-            for service in peripheralServices where service.uuid == CBUUID(string: kServiceUUID) {
+            for service in peripheralServices where service.uuid == CBUUID(string: serviceUUID) {
                 print("キャラクタリスティック探索")
                 // キャラクタリスティック探索開始
-                let characteristicUUIDArray: [CBUUID] = [CBUUID(string: kCharacteristicUUID)]
+                let characteristicUUIDArray: [CBUUID] = [CBUUID(string: characteristicUUID)]
                 peripheral.discoverCharacteristics(characteristicUUIDArray, for: service)
             }
         }
@@ -206,7 +198,7 @@ extension BluetoothService: CBPeripheralManagerDelegate {
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
         if peripheral.state == .poweredOn {
             // サービスを登録
-            let service = CBMutableService(type: CBUUID(string: kServiceUUID), primary: true)
+            let service = CBMutableService(type: CBUUID(string: serviceUUID), primary: true)
             self.peripheralManager.add(service)
         }
     }
@@ -232,10 +224,17 @@ extension BluetoothService: CBPeripheralManagerDelegate {
             return
         }
         // キャラクタリスティック別の処理
-        for characreristic in serviceCharacteristics {
-            if characreristic.uuid == CBUUID(string: kCharacteristicUUID) {
-                // データ書き込み用のキャラクタリスティックを保持
-                self.writeCharacteristic = characreristic
+        for characteristic in serviceCharacteristics {
+            if characteristic.uuid == CBUUID(string: characteristicUUID) {
+                if characteristic.properties.contains(.write) {
+                    // データ書き込み用のキャラクタリスティックを保持
+                    self.writeCharacteristic = characteristic
+                    print("書き込み用キャラクタリスティックを保持：\(characteristic.uuid)")
+                }
+                if characteristic.properties.contains(.notify) {
+                    peripheral.setNotifyValue(true, for: characteristic)
+                    print("通知用キャラクタリスティックを監視：\(characteristic.uuid)")
+                }
             }
         }
     }
@@ -268,11 +267,7 @@ extension BluetoothService: CBPeripheralManagerDelegate {
             // 失敗処理
             return
         }
-        guard let data = characteristic.value else {
-            // 失敗処理
-            return
-        }
-        // データが渡ってくる
-        print(data)
+        
+        delegate?.didUpdateValueFor(characteristic)
     }
 }

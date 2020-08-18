@@ -24,18 +24,28 @@ class TrainCollectionViewCell: UICollectionViewCell {
         button.isHidden = train.bluetoothService.peripheral == nil
     }
     
-    @IBAction private func controlButtonClicked(_ sender: UIButton) {
-        guard let train = train else {
-            return
-        }
-        
-        sender.isSelected = !sender.isSelected
-        if sender.isSelected {
-            train.bluetoothService.start()
-            sender.setImage(UIImage(named: "stop"), for: .normal)
+    @IBAction func controlButtonClicked(_ sender: UIButton) {
+        toggle()
+    }
+    
+    func toggle() {
+        button.isSelected = !button.isSelected
+        if button.isSelected {
+            start()
+            button.setImage(UIImage(named: "stop"), for: .normal)
         } else {
-            train.bluetoothService.stop()
-            sender.setImage(UIImage(named: "start"), for: .normal)
+            stop()
+            button.setImage(UIImage(named: "start"), for: .normal)
         }
+    }
+}
+
+private extension TrainCollectionViewCell {
+    func start() {
+        train?.bluetoothService.write(byteArray: kMabeeeStartByteArray)
+    }
+    
+    func stop() {
+        train?.bluetoothService.write(byteArray: kMabeeeStopByteArray)
     }
 }
