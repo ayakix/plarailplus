@@ -11,6 +11,9 @@
   #include <SoftwareSerial.h>
 #endif
 
+#define HAYABUSA_PIN A0
+#define KOMACHI_PIN A3
+
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
 Adafruit_BLEGatt gatt(ble);
@@ -80,7 +83,8 @@ uint8_t status[] = {0, 0};
 
 void loop(void) {
   for (int i = 0; i < 2; i++) {
-    int value = analogRead(i);
+    int pin = (i == 0) ? HAYABUSA_PIN : KOMACHI_PIN;
+    int value = analogRead(pin);
     if (lastValues[i] == 0 && value > 100) {
       status[i] = !status[i];
       gatt.setChar(characterId, status, 2);
